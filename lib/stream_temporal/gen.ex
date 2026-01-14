@@ -295,7 +295,10 @@ if Code.ensure_loaded?(StreamData) do
           list
           |> Enum.with_index()
           |> Enum.filter(fn {v, _i} -> pred.(v) end)
-          |> Enum.reduce({list |> Enum.map(&constant/1), 1}, &process_eventually_element(&1, &2, some_gen, mapper))
+          |> Enum.reduce(
+            {list |> Enum.map(&constant/1), 1},
+            &process_eventually_element(&1, &2, some_gen, mapper)
+          )
           |> elem(0)
           |> fixed_list()
       end
@@ -369,7 +372,10 @@ if Code.ensure_loaded?(StreamData) do
           list
           |> Enum.with_index()
           |> Enum.filter(fn {v, _i} -> pred.(v) end)
-          |> Enum.reduce({Enum.map(list, &constant/1), 1}, &process_next_element(&1, &2, some_gen, mapper))
+          |> Enum.reduce(
+            {Enum.map(list, &constant/1), 1},
+            &process_next_element(&1, &2, some_gen, mapper)
+          )
           |> elem(0)
           |> fixed_list()
       end
