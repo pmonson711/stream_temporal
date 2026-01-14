@@ -23,6 +23,20 @@ def deps do
 end
 ```
 
+## Property-Based Testing
+
+The library includes optional property-based testing helpers when `stream_data` is available:
+
+```elixir
+# Import the testing helpers
+import StreamTemporal.Gen
+
+# Generate test data with temporal properties
+gen = list_of(integer()) ~> always(integer())
+```
+
+See the `StreamTemporal.Gen` module documentation for more details on property-based testing capabilities.
+
 ## Usage Examples
 
 ### starts_with/2
@@ -66,6 +80,10 @@ Insert a value after elements that match a predicate:
 StreamTemporal.next([1, 2, 3], 0, fn x -> x == 2 end) |> Enum.to_list()
 # [1, 2, 0, 3]
 
+# Insert multiple values after matching elements
+StreamTemporal.next([1, 2, 3, 2, 4], "X", fn x -> x == 2 end) |> Enum.to_list()
+# [1, 2, "X", 3, 2, "X", 4]
+
 # With a function for dynamic value generation
 StreamTemporal.next([1, 2, 3], fn -> :rand.uniform(10) end, fn x -> x == 2 end) |> Enum.to_list()
 # [1, 2, 7, 3] (random value inserted after 2)
@@ -79,6 +97,10 @@ Insert a value when a predicate based on accumulated values is met:
 # Insert 0 when we've accumulated at least 2 elements
 StreamTemporal.always([1, 2, 3], 0, fn acc -> length(acc) >= 2 end) |> Enum.to_list()
 # [1, 2, 0]
+
+# Insert value when sum reaches a threshold
+StreamTemporal.always([1, 2, 3, 4], 99, fn acc -> Enum.sum(acc) >= 3 end) |> Enum.to_list()
+# [1, 2, 99]
 
 # With a function that uses the accumulator to generate the value
 StreamTemporal.always([1, 2, 3, 4], fn acc -> Enum.sum(acc) end, fn acc -> length(acc) >= 2 end) |> Enum.to_list()
@@ -98,6 +120,46 @@ StreamTemporal is particularly useful for:
 3. **Conditional Stream Augmentation**: Dynamically insert elements based on accumulated context
 4. **Protocol Implementation**: Implementing stream-based protocols that require specific element ordering
 5. **Testing and Simulation**: Injecting specific values at predetermined points in data streams for testing
+6. **Event Processing**: Adding metadata or control events based on temporal conditions in event streams
+
+## Examples in Practice
+
+### Data Pipeline with Headers and Footers
+
+```elixir
+# Add header and footer to a data stream
+data = [1, 2, 3, 4, 5]
+
+data
+|> StreamTemporal.starts_with("START")
+|> StreamTemporal.ends_with("END", fn _ -> false end)
+|> Enum.to_list()
+# ["START", 1, 2, 3, 4, 5, "END"]
+```
+
+### Conditional Event Markers
+
+```elixir
+# Add warning markers when temperature exceeds threshold
+temperatures = [20, 25, 30, 35, 28, 40]
+
+temperatures
+|> StreamTemporal.next("WARNING", fn temp -> temp > 30 end)
+|> Enum.to_list()
+# [20, 25, 30, "WARNING", 35, 28, "WARNING", 40]
+```
+
+### Accumulation-Based Insertions
+
+```elixir
+# Insert checkpoint every 3 elements
+data = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+data
+|> StreamTemporal.always("CHECKPOINT", fn acc -> rem(length(acc), 3) == 0 and length(acc) > 0 end)
+|> Enum.to_list()
+# [1, 2, 3, "CHECKPOINT", 4, 5, 6, "CHECKPOINT", 7, 8, 9, "CHECKPOINT"]
+```
 
 ## Documentation
 
@@ -105,13 +167,20 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at <https://hexdocs.pm/stream_temporal>.
 
+The library includes comprehensive documentation with:
+
+- **API Reference**: Complete documentation for all functions with type specifications
+- **Examples**: Working code examples for each function
+- **Property-Based Testing**: Documentation for the `StreamTemporal.Gen` module when using StreamData
+- **Doctests**: All examples are tested as doctests to ensure they work correctly
+- 
 ## Continuous Integration
 
 The project uses GitHub Actions for continuous integration with the following workflow:
 
 ### Test Matrix
-- **Elixir versions**: 1.19, 1.20, 1.21
-- **OTP versions**: 26.0, 27.0
+- **Elixir versions**: 1.18, 1.19
+- **OTP versions**: 27, 28
 - **Operating system**: Ubuntu Latest
 
 ### CI Pipeline
