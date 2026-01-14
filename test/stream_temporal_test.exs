@@ -72,7 +72,7 @@ defmodule StreamTemporalTest do
 
     test "handles triggered state correctly" do
       # This test is designed to hit the {v, true} pattern matching clause
-      stream = StreamTemporal.always([1, 2, 3, 4, 5], 99, fn acc -> length(acc) >= 1 end)
+      stream = StreamTemporal.always([1, 2, 3, 4, 5], 99, fn acc -> acc != [] end)
       # Take just a few elements to see the behavior
       result = Enum.take(stream, 3)
       # The first element should trigger the condition, so we should get [99, 99, 99]
