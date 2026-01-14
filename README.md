@@ -173,4 +173,57 @@ The library includes comprehensive documentation with:
 - **Examples**: Working code examples for each function
 - **Property-Based Testing**: Documentation for the `StreamTemporal.Gen` module when using StreamData
 - **Doctests**: All examples are tested as doctests to ensure they work correctly
+- 
+## Continuous Integration
+
+The project uses GitHub Actions for continuous integration with the following workflow:
+
+### Test Matrix
+- **Elixir versions**: 1.18, 1.19
+- **OTP versions**: 27, 28
+- **Operating system**: Ubuntu Latest
+
+### CI Pipeline
+1. **Test Job**: Runs comprehensive tests across all supported versions
+   - Dependency caching for faster builds
+   - Compilation with warnings as errors
+   - Credo code analysis
+   - Dialyzer static analysis
+   - Unit tests with coverage reporting
+   - Documentation generation
+
+2. **Lint Job**: Additional code quality checks
+   - Format verification (ensures code is properly formatted)
+   - Credo analysis (if not already run in test job)
+
+3. **Security Job**: Security vulnerability checks
+   - Dependency vulnerability audit using `mix hex.audit`
+   - Dependency audit using `depaudit` (when available)
+
+### Local Development
+
+For local development, you can run the same checks as CI:
+
+```bash
+# Install dependencies
+mix deps.get
+
+# Run tests with coverage
+mix test --cover
+
+# Run static analysis
+mix dialyzer
+
+# Run code analysis
+mix credo
+
+# Check formatting
+mix format --check-formatted
+
+# Generate documentation
+mix docs
+
+# Run all quality checks
+mix test && mix credo && mix dialyzer && mix format --check-formatted
+```
 
