@@ -1,6 +1,7 @@
 defmodule StreamTemporal.GenTest do
   use ExUnit.Case, async: true
   use ExUnitProperties
+  doctest StreamTemporal.Gen
   alias StreamTemporal.Gen
 
   setup do
